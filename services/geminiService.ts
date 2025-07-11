@@ -1,16 +1,15 @@
-
 import { GoogleGenAI, Part, GenerateContentResponse } from "@google/genai";
 import type { ListingData } from '../types';
 
-// This is a placeholder that build tools or your deployment environment (like Netlify) will replace.
-const apiKey = process.env.API_KEY;
+// Esto lee la clave API de forma segura desde Netlify o tu archivo .env local
+const apiKey = import.meta.env.VITE_API_KEY as string;
 
 if (!apiKey) {
-    console.error("API_KEY environment variable not set. The app will not work.");
+    console.error("VITE_API_KEY environment variable not set. The app will not work.");
+    // Opcional: podrías mostrar un error en la UI aquí
 }
 
-// Initialize with a check to prevent errors if the key is missing.
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const ai = new GoogleGenAI({ apiKey });
 
 const fileToGenerativePart = async (file: File): Promise<Part> => {
     const base64EncodedData = await new Promise<string>((resolve, reject) => {
@@ -33,8 +32,8 @@ export const generateListingContent = async (
     data: ListingData
 ): Promise<{ description: string; priceSuggestion: string; sources: GenerateContentResponse['candidates'][0]['groundingMetadata']['groundingChunks'] }> => {
     
-    if (!ai) {
-        throw new Error("La instancia de la IA de Gemini no está inicializada. Asegúrate de que la variable de entorno API_KEY esté configurada.");
+    if (!apiKey) {
+        throw new Error("La instancia de la IA de Gemini no está inicializada. Asegúrate de que la variable de entorno VITE_API_KEY esté configurada en Netlify.");
     }
     
     const imageParts = await Promise.all(images.map(fileToGenerativePart));
